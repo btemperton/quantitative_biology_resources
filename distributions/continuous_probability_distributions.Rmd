@@ -1,0 +1,212 @@
+---
+title: "Continuous Probability Distributions"
+author: "Ben Temperton"
+date: "06/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(colorblindr)
+cols <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#999999")
+```
+
+Here, we describe the distributions found when your data is **continuous**
+
+## The Uniform distribution
+
+A uniform distribution is the simplest of continuous distribution, where one where all values between a minimum, $a$ and a maximum $b$ are equally likely, where:
+
+$$
+-\infty \lt a,b \lt \infty
+$$
+
+```{r, echo=FALSE}
+df = tibble(x=c(runif(10000, min=-4, max=4), 
+                runif(10000, min=100, max=1000), 
+                runif(10000, min=0, max=1)), 
+            y=c(rep('min=-4, max=4', 10000), rep('min=100, max=1000', 10000), rep('min=0, max=1', 10000)))
+df$y<-as.factor(df$y)
+ggplot(df, aes(x=x, fill=y)) + 
+    geom_density() + 
+    facet_wrap(~y, nrow=1, scale='free') +
+    theme_minimal_hgrid(12) +
+    scale_x_continuous(name="Value") +
+    scale_y_continuous(name='Count') +
+    scale_fill_manual(
+    values = cols
+  ) +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "bottom",
+    legend.justification = "right",
+    legend.margin = margin(6, 0, 1.5, 0, "pt"),
+    legend.spacing.x = grid::unit(3, "pt"),
+    legend.spacing.y = grid::unit(0, "pt"),
+    legend.box.spacing = grid::unit(0, "pt")
+  )
+    
+```
+
+Note there is some bumpiness in the tops of these distributions - this is because the figures are generated using 10,000 random numbers picked from a uniform distribution using the `rpois` function. The more random numbers you pick, the less bumpy the tops become (because you have more observations):
+
+```{r, echo=FALSE}
+df = tibble(x=c(runif(10, min=-4, max=4),
+                runif(100, min=-4, max=4), 
+                runif(10000, min=-4, max=4), 
+                runif(1e6, min=-4, max=4)), 
+            y=c(rep('10 observations', 10), rep('100 observations', 100), rep('10,000 observations', 10000), rep('1,000,000 observations', 1e6)))
+df$y<-factor(df$y, levels=c('10 observations', '100 observations', '10,000 observations', '1,000,000 observations'))
+ggplot(df, aes(x=x, fill=y)) + 
+    geom_density() + 
+    facet_wrap(~y, nrow=2) +
+    theme_minimal_hgrid(12) +
+    scale_x_continuous(name="Value", limits=c(-10,10)) +
+    scale_y_continuous(name='Count') +
+    scale_fill_manual(
+    values = cols
+  ) +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "bottom",
+    legend.justification = "right",
+    legend.margin = margin(6, 0, 1.5, 0, "pt"),
+    legend.spacing.x = grid::unit(3, "pt"),
+    legend.spacing.y = grid::unit(0, "pt"),
+    legend.box.spacing = grid::unit(0, "pt")
+  )
+    
+```
+
+You'll also notice that the slopes of the distribution get straighter the more observations you make. This provides a warning on how one should interpret density plots with few observations - none of the observations are less than $a$ or greater than $b$, but the density plot is smoothing out the curve from the baseline, making it look like there is a low probability of finding values beyond these extremes. If we plot them with a histogram, these go away:
+
+```{r, echo=FALSE}
+df = tibble(x=c(runif(10, min=-4, max=4),
+                runif(100, min=-4, max=4), 
+                runif(10000, min=-4, max=4), 
+                runif(1e6, min=-4, max=4)), 
+            y=c(rep('10 observations', 10), rep('100 observations', 100), rep('10,000 observations', 10000), rep('1,000,000 observations', 1e6)))
+df$y<-factor(df$y, levels=c('10 observations', '100 observations', '10,000 observations', '1,000,000 observations'))
+ggplot(df, aes(x=x, fill=y)) + 
+    geom_histogram(bins=100) + 
+    facet_wrap(~y, nrow=2, scale='free_y') +
+    theme_minimal_hgrid(12) +
+    scale_x_continuous(name="Value", limits=c(-10,10)) +
+    scale_y_continuous(name='Count') +
+    scale_fill_manual(
+    values = cols
+  ) +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "bottom",
+    legend.justification = "right",
+    legend.margin = margin(6, 0, 1.5, 0, "pt"),
+    legend.spacing.x = grid::unit(3, "pt"),
+    legend.spacing.y = grid::unit(0, "pt"),
+    legend.box.spacing = grid::unit(0, "pt")
+  )
+    
+```
+
+A separate discussion on how best to visualise distributions can be found here INSERT LINK TO APPROPRIATE CHAPTER.
+
+## The Normal, or Gaussian distribution
+
+
+### The Central Limit Theorem
+
+
+
+## The Exponential distribution
+Imagine an experiment observing predation rates of foxes. On average, 10 rabbits a day are predated by foxes. The number of rabbits predated by foxes is **Poisson distributed**, because it can't be less than zero and has discrete values. We call that rate, $\lambda$. If you wanted to predict how long it would take for the _first_ rabbit to be eaten on a given day, we need to reach for the **exponential distribution**. The broad definitiion is - if events are Poisson distributed, and occur randomly over time at a rate of $\lambda$, then the time until the first event occuring is described by an exponential distribution. It only has one parameter, $\lambda$, and its probability density function is described as:
+
+$$
+f(x) = \lambda e^{-\lambda x}
+$$
+
+You can see here how the value changes as the rate increases:
+
+```{r, echo=FALSE}
+df = tibble(x=c(rexp(10000, rate =0.5), 
+                rexp(10000, rate=1), 
+                rexp(10000, rate=1.5)), 
+            y=c(rep(0.5, 10000), rep(1, 10000), rep(1.5, 10000)))
+df$y<-as.factor(df$y)
+ggplot(df, aes(x=x, fill=y)) + 
+    geom_density() + 
+    facet_wrap(~y, nrow=1) +
+    theme_minimal_hgrid(12) +
+    scale_x_continuous(name="Time until first event") +
+    scale_y_continuous(name='Count') +
+    scale_fill_manual(
+    values = cols
+  ) +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "bottom",
+    legend.justification = "right",
+    legend.margin = margin(6, 0, 1.5, 0, "pt"),
+    legend.spacing.x = grid::unit(3, "pt"),
+    legend.spacing.y = grid::unit(0, "pt"),
+    legend.box.spacing = grid::unit(0, "pt")
+  )
+    
+```
+
+So, as the rate $\lambda$ increases (i.e as more rabbits get predated per unit time), the less time it takes for the first rabbit to be predated, so the probabilty of the first predation event occuring in the first few hours increases.
+
+## The Gamma distribution
+
+The gamma distribution is essentially a generalisation of the exponential distribution that describes the probability of the waiting time until the $n^{th}$ event, instead of the first event. 
+
+It is a two-parameter distribution where the parameters are traditionally known as _shape_, $\alpha$ and _rate_, $\lambda$. Its probability density function is defined thus:
+
+$$
+f(x; \alpha, \lambda) = \frac{\lambda^{\alpha}}{\Gamma(\alpha)}x^{\alpha-1}e^{-\lambda x}\ \ \ \text{for}\ \alpha,\lambda\gt0
+$$
+
+As an example, if you observe one predation event every two days (so $\alpha= 0.5$), how long will it take you to collect 100 datapoints (so $\lambda=100$)? What about if you observe 5 predations a day ($\alpha=5$)? 20?
+
+
+```{r, echo=FALSE}
+df = tibble(x=c(rgamma(10000, rate =0.5, shape=100), 
+                rgamma(10000, rate=5, shape=100), 
+                rgamma(10000, rate=20, shape=100)), 
+            y=c(rep('0.5 per day', 10000), rep('5 per day', 10000), rep('20 per day', 10000)))
+df$y<-factor(df$y, levels=c('0.5 per day', '5 per day', '20 per day'))
+ggplot(df, aes(x=x, fill=y)) + 
+    geom_density() + 
+    facet_wrap(~y, nrow=1, scales='free') +
+    theme_minimal_hgrid(12) +
+    scale_x_continuous(name="Days until 100 data points collected") +
+    scale_y_continuous(name='Count') +
+    scale_fill_manual(
+    values = cols
+  ) +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "bottom",
+    legend.justification = "right",
+    legend.margin = margin(6, 0, 1.5, 0, "pt"),
+    legend.spacing.x = grid::unit(3, "pt"),
+    legend.spacing.y = grid::unit(0, "pt"),
+    legend.box.spacing = grid::unit(0, "pt")
+  )
+    
+```
+
+So, at predation rates of 0.5 per day, you'd be looking at around 160-240 days to collect your data. At 5 per day, you'd be looking at maybe 27-24 days. At 20 per day, you'd be waiting no more than 6 days. Given the above distributions, it becomes apparent that the mean of a gamma distribution is ratio of the _shape_ and the _rate_, so 
+
+$$
+E[X] = \frac{\alpha}{\lambda}
+$$
+
+**Remember that an exponential distribution is simply a gamma distribution where the shape, $\alpha=1$**
+
