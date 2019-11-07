@@ -102,12 +102,16 @@ A separate discussion on how best to visualise distributions can be found here I
 
 ## The Normal, or Gaussian distribution
 
-The normal distribution is probably the distribution that almost everybody has heard of - its use is extremely ubiquitous across all sciences and particularly biology.
+The normal distribution is probably the distribution that almost everybody has heard of - its use is extremely ubiquitous across all sciences and particularly biology. Its shape is characterised by a symmetric 'bell curve', described by two parameters $\sigma$, which is the standard deviation, and $\mu$, which is the mean:
 
-It has a probability density function with two parameters: $\sigma$, which is the standard deviation, and $\mu$, which is the mean:
+It has a probability density function with two parameters:
 $$
 p(x) = \frac{1}{\sigma\sqrt{2\pi}}exp-\frac{(x-\mu)^{2}}{2\sigma^{2}}
 $$
+
+
+
+
 
 ### The Central Limit Theorem
 The reason the normal distribution is so ubiquitous in science is because of the __central limit theorem__. Imagine you have some population with an underlying distribution - it may be any kind: continuous or discrete, Poisson, exponential, negative binomial _etc._. You make $s$ observations from that population, and then you take the __mean__ of that set of observations. You then repeat this over and over again $n$ times, each time taking $s$ observations and then calculating the mean, so you end up with a series of means:
@@ -116,14 +120,82 @@ $$
 [\bar{\chi_{1}}, \bar{\chi_{2}}, \bar{\chi_{3}}, \bar{\chi_{4}}, \bar{\chi_{5}} .. \bar{\chi_{n}}]
 $$
 
-Regardless of how weird the underlying distribution is, the distribution of those means will apporximate a normal distribution as $n$ increases. 
+Regardless of how weird the underlying distribution is, the distribution of those means will approximate a normal distribution as $n$ increases. 
 
-As the number of observations per set increases, the standard deviation of means decreases. There is less variance in the results. 
+We can see that here, if we repeatedly sample five observations ($s=5$) from a population of 10,000 with an exponential distribution, where $n=10, 100, 1000, 10000$:
 
-We can see that here:
+```{r, echo=FALSE}
+bootstrap_replicate_1d<-function(data, func, size=NULL){
+  if (is.null(size)){
+    size = length(data)
+  }
+  bs_sample = sample(data, size=size, replace=TRUE)
+  do.call(func, list(x=bs_sample))
+}
 
-```{r}
+generate_bootstrap_replicate<-function(data, func, n=10000, size=NULL){
+  replicate(n, do.call(bootstrap_replicate_1d, list(data=data, func=func, size=size)))
+}
+population = rexp(10000)
+
+s5_n10 <- generate_bootstrap_replicate(population, mean, n=10, size =5)
+s5_n100 <- generate_bootstrap_replicate(population, mean, n=100, size =5)
+s5_n1000 <- generate_bootstrap_replicate(population, mean, n=1000, size =5)
+s5_n10000 <- generate_bootstrap_replicate(population, mean, n=10000, size =5)
+
+df = tibble(x=c(s5_n10, s5_n100, s5_n1000, s5_n10000), 
+            y=c(rep('s=5, n=10', 10), rep('s=5, n=100', 100), rep('s=5, n=1000', 1000), rep('s=5, n=10000', 10000)))
+df$y<-factor(df$y, levels=c('s=5, n=10', 's=5, n=100', 's=5, n=1000', 's=5, n=10000'))
+ggplot(df, aes(x=x, fill=y)) + 
+    geom_density() +
+    facet_wrap(~y, nrow=1) +
+    theme_minimal_hgrid(12) +
+    scale_x_continuous(name="Mean of n") +
+    scale_y_continuous(name='Count') +
+    scale_fill_manual(
+    values = cols
+  ) +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "none"
+  )
 ```
+
+Similarly, if we take more observations per repeat (so increase $s$) we see a reduction in variance (a narrowing of the distribution):
+
+```{r, echo=FALSE}
+
+population = rexp(10000)
+
+s5_n10000 <- generate_bootstrap_replicate(population, mean, n=10000, size =5)
+s10_n10000 <- generate_bootstrap_replicate(population, mean, n=10000, size =10)
+s20_n10000 <- generate_bootstrap_replicate(population, mean, n=10000, size =20)
+s30_n10000<- generate_bootstrap_replicate(population, mean, n=10000, size =30)
+
+df = tibble(x=c(s5_n10000, s10_n10000, s20_n10000, s30_n10000), 
+            y=c(rep('s=5, n=10000', 10000), rep('s=10, n=10000', 10000), rep('s=20, n=10000', 10000), rep('s=30, n=10000', 10000)))
+df$y<-factor(df$y, levels=c('s=5, n=10000', 's=10, n=10000', 's=20, n=10000', 's=30, n=10000'))
+ggplot(df, aes(x=x, fill=y)) + 
+    geom_density() +
+    facet_wrap(~y, nrow=1) +
+    theme_minimal_hgrid(12) +
+    scale_x_continuous(name="Mean of n") +
+    scale_y_continuous(name='Count') +
+    scale_fill_manual(
+    values = cols
+  ) +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "none"
+  )
+```
+
+
+### So what does this mean for your experiments? 
+
+### But what if you don't have lots of observations and samples?
 
 ## The Exponential distribution
 Imagine an experiment observing predation rates of foxes. On average, 10 rabbits a day are predated by foxes. The number of rabbits predated by foxes is **Poisson distributed**, because it can't be less than zero and has discrete values. We call that rate, $\lambda$. If you wanted to predict how long it would take for the _first_ rabbit to be eaten on a given day, we need to reach for the **exponential distribution**. The broad definitiion is - if events are Poisson distributed, and occur randomly over time at a rate of $\lambda$, then the time until the first event occuring is described by an exponential distribution. It only has one parameter, $\lambda$, and its probability density function is described as:
