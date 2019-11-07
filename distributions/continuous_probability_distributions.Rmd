@@ -41,12 +41,7 @@ ggplot(df, aes(x=x, fill=y)) +
   theme(
     axis.line = element_blank(),
     strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
-    legend.position = "bottom",
-    legend.justification = "right",
-    legend.margin = margin(6, 0, 1.5, 0, "pt"),
-    legend.spacing.x = grid::unit(3, "pt"),
-    legend.spacing.y = grid::unit(0, "pt"),
-    legend.box.spacing = grid::unit(0, "pt")
+    legend.position = "none"
   )
     
 ```
@@ -72,12 +67,7 @@ ggplot(df, aes(x=x, fill=y)) +
   theme(
     axis.line = element_blank(),
     strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
-    legend.position = "bottom",
-    legend.justification = "right",
-    legend.margin = margin(6, 0, 1.5, 0, "pt"),
-    legend.spacing.x = grid::unit(3, "pt"),
-    legend.spacing.y = grid::unit(0, "pt"),
-    legend.box.spacing = grid::unit(0, "pt")
+    legend.position = "none"
   )
     
 ```
@@ -103,12 +93,7 @@ ggplot(df, aes(x=x, fill=y)) +
   theme(
     axis.line = element_blank(),
     strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
-    legend.position = "bottom",
-    legend.justification = "right",
-    legend.margin = margin(6, 0, 1.5, 0, "pt"),
-    legend.spacing.x = grid::unit(3, "pt"),
-    legend.spacing.y = grid::unit(0, "pt"),
-    legend.box.spacing = grid::unit(0, "pt")
+    legend.position = "none"
   )
     
 ```
@@ -117,10 +102,28 @@ A separate discussion on how best to visualise distributions can be found here I
 
 ## The Normal, or Gaussian distribution
 
+The normal distribution is probably the distribution that almost everybody has heard of - its use is extremely ubiquitous across all sciences and particularly biology.
+
+It has a probability density function with two parameters: $\sigma$, which is the standard deviation, and $\mu$, which is the mean:
+$$
+p(x) = \frac{1}{\sigma\sqrt{2\pi}}exp-\frac{(x-\mu)^{2}}{2\sigma^{2}}
+$$
 
 ### The Central Limit Theorem
+The reason the normal distribution is so ubiquitous in science is because of the __central limit theorem__. Imagine you have some population with an underlying distribution - it may be any kind: continuous or discrete, Poisson, exponential, negative binomial _etc._. You make $s$ observations from that population, and then you take the __mean__ of that set of observations. You then repeat this over and over again $n$ times, each time taking $s$ observations and then calculating the mean, so you end up with a series of means:
 
+$$
+[\bar{\chi_{1}}, \bar{\chi_{2}}, \bar{\chi_{3}}, \bar{\chi_{4}}, \bar{\chi_{5}} .. \bar{\chi_{n}}]
+$$
 
+Regardless of how weird the underlying distribution is, the distribution of those means will apporximate a normal distribution as $n$ increases. 
+
+As the number of observations per set increases, the standard deviation of means decreases. There is less variance in the results. 
+
+We can see that here:
+
+```{r}
+```
 
 ## The Exponential distribution
 Imagine an experiment observing predation rates of foxes. On average, 10 rabbits a day are predated by foxes. The number of rabbits predated by foxes is **Poisson distributed**, because it can't be less than zero and has discrete values. We call that rate, $\lambda$. If you wanted to predict how long it would take for the _first_ rabbit to be eaten on a given day, we need to reach for the **exponential distribution**. The broad definitiion is - if events are Poisson distributed, and occur randomly over time at a rate of $\lambda$, then the time until the first event occuring is described by an exponential distribution. It only has one parameter, $\lambda$, and its probability density function is described as:
@@ -135,7 +138,7 @@ You can see here how the value changes as the rate increases:
 df = tibble(x=c(rexp(10000, rate =0.5), 
                 rexp(10000, rate=1), 
                 rexp(10000, rate=1.5)), 
-            y=c(rep(0.5, 10000), rep(1, 10000), rep(1.5, 10000)))
+            y=c(rep('rate = 0.5', 10000), rep('rate = 1', 10000), rep('rate = 1.5', 10000)))
 df$y<-as.factor(df$y)
 ggplot(df, aes(x=x, fill=y)) + 
     geom_density() + 
@@ -149,12 +152,7 @@ ggplot(df, aes(x=x, fill=y)) +
   theme(
     axis.line = element_blank(),
     strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
-    legend.position = "bottom",
-    legend.justification = "right",
-    legend.margin = margin(6, 0, 1.5, 0, "pt"),
-    legend.spacing.x = grid::unit(3, "pt"),
-    legend.spacing.y = grid::unit(0, "pt"),
-    legend.box.spacing = grid::unit(0, "pt")
+    legend.position = "none"
   )
     
 ```
@@ -192,12 +190,7 @@ ggplot(df, aes(x=x, fill=y)) +
   theme(
     axis.line = element_blank(),
     strip.text = element_text(size = 12, margin = margin(0, 0, 6, 0, "pt")),
-    legend.position = "bottom",
-    legend.justification = "right",
-    legend.margin = margin(6, 0, 1.5, 0, "pt"),
-    legend.spacing.x = grid::unit(3, "pt"),
-    legend.spacing.y = grid::unit(0, "pt"),
-    legend.box.spacing = grid::unit(0, "pt")
+    legend.position = "none"
   )
     
 ```
