@@ -13,7 +13,7 @@ library(colorblindr)
 cols <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#999999")
 ```
 
-Here, we describe the distributions found when your data is **continuous**
+Here, we describe the distributions found when your data is **continuous**:
 
 ## The Uniform distribution
 
@@ -104,13 +104,41 @@ A separate discussion on how best to visualise distributions can be found here I
 
 The normal distribution is probably the distribution that almost everybody has heard of - its use is extremely ubiquitous across all sciences and particularly biology. Its shape is characterised by a symmetric 'bell curve', described by two parameters $\sigma$, which is the standard deviation, and $\mu$, which is the mean:
 
-It has a probability density function with two parameters:
+It has a probability density function with these two parameters:
 $$
-p(x) = \frac{1}{\sigma\sqrt{2\pi}}exp-\frac{(x-\mu)^{2}}{2\sigma^{2}}
+p(x\ \vert\ \mu,\sigma) = \frac{1}{\sigma\sqrt{2\pi}}exp-\frac{(x-\mu)^{2}}{2\sigma^{2}}
 $$
 
 
+```{r, echo=FALSE}
+values = rnorm(1e6, 100, 50)
+mu= mean(values)
+sigma=sd(values)
+ggplot(tibble(x=values), aes(x), fill=cols[0]) +
+  geom_density(fill="#0072B2") +
+  theme_minimal_hgrid(12) +
+    scale_x_continuous(name="x",
+                       breaks=c(mu-3*sigma, mu-2*sigma, mu-1*sigma, mu + 1*sigma, mu + 2*sigma, mu+3*sigma),
+                       labels=c(paste0('\u03bc - 3\u03c3'), 
+                                paste0('\u03bc - 2\u03c3'),
+                                paste0('\u03bc - \u03c3'),
+                                paste0('\u03bc + \u03c3'),
+                                paste0('\u03bc + 2\u03c3'),
+                                paste0('\u03bc + 3\u03c3'))) +
+    scale_y_continuous(name='Probability') +
+  theme(
+    axis.line = element_blank(),
+    strip.text = element_text(size = 14, margin = margin(0, 0, 6, 0, "pt")),
+    legend.position = "none"
+  )
+```
 
+In a normal distribution:
+
+* 68% of the data is found within 1 standard deviation of the mean
+* 95% is found within 2 standard deviations of the mean
+* 99.7% is found within 3 standard deviations of the mean. 
+* The mean, median and mode are all equal.
 
 
 ### The Central Limit Theorem
@@ -122,7 +150,7 @@ $$
 
 Regardless of how weird the underlying distribution is, the distribution of those means will approximate a normal distribution as $n$ increases. 
 
-We can see that here, if we repeatedly sample five observations ($s=5$) from a population of 10,000 with an exponential distribution, where $n=10, 100, 1000, 10000$:
+We can see that here, if we repeatedly sample five observations ($s=5$) from a population of 10,000 with a uniform distribution from 1 to 100, where $n=10, 100, 1000, 10000$:
 
 ```{r, echo=FALSE}
 bootstrap_replicate_1d<-function(data, func, size=NULL){
@@ -136,7 +164,7 @@ bootstrap_replicate_1d<-function(data, func, size=NULL){
 generate_bootstrap_replicate<-function(data, func, n=10000, size=NULL){
   replicate(n, do.call(bootstrap_replicate_1d, list(data=data, func=func, size=size)))
 }
-population = rexp(10000)
+population = runif(10000, min=1, max=100)
 
 s5_n10 <- generate_bootstrap_replicate(population, mean, n=10, size =5)
 s5_n100 <- generate_bootstrap_replicate(population, mean, n=100, size =5)
@@ -166,8 +194,6 @@ Similarly, if we take more observations per repeat (so increase $s$) we see a re
 
 ```{r, echo=FALSE}
 
-population = rexp(10000)
-
 s5_n10000 <- generate_bootstrap_replicate(population, mean, n=10000, size =5)
 s10_n10000 <- generate_bootstrap_replicate(population, mean, n=10000, size =10)
 s20_n10000 <- generate_bootstrap_replicate(population, mean, n=10000, size =20)
@@ -192,10 +218,23 @@ ggplot(df, aes(x=x, fill=y)) +
   )
 ```
 
+### So why does this make it useful?
+Irrespective of how weird the properties of our distribution, or the forces that shape it, we can describe arbitrarily complex probability distributions with just two properties: the mean, $\mu$, and the standard deviation $\sigma$. It is also very useful for calculating **confidence intervals**. Remember each of the plots above is the _distribution of means_ from multiple sets of observations. 95% percent of our means from all our samples occurs within 2 standard deviations of the mean of means (also known as $\hat\mu$).  We can also calculate the standard deviation of the distribution of means, which is also known as **standard error**. Specifically:
 
-### So what does this mean for your experiments? 
+$$
+\hat\sigma = \frac{\sigma}{\sqrt{N}}
+$$
 
-### But what if you don't have lots of observations and samples?
+where $N$ is the number of observations. The more observations we have, the bigger the denominator, the smaller the standard error, and the more confident we can be in our estimate of the population mean. Because the means are normally distributed, we can also infer with 95% confidence that the mean of the whole population occurs between $\hat\mu - 2\hat\sigma$ and $\hat\mu + 2\hat\sigma$. As you saw above, the bigger the number of observations per set, the narrower the distribution, the thinner the wedge between $\hat\mu - 2\hat\sigma$ and $\hat\mu + 2\hat\sigma$, so the more confident we can be in our $\hat\mu$.
+
+**Take home message: Having lots of replicates matters in your experiments, if you want to use your results to infer properties of the population from which you are subsampling**.
+
+Despite the normal distribution being so important because of the central limit theorem, one still needs to be aware of the properties of the underlying distributions of your populations for the following reasons:
+
+1. Because it matters when it comes to building linear models and generalized linear models for dealing with error.
+2. Because it enables you to accurately simulate your data for estimating statistical power and cheap, pre-sampling sanity checks.
+
+With that in mind, let us now review the types of distributions typically found in biology data:
 
 ## The Exponential distribution
 Imagine an experiment observing predation rates of foxes. On average, 10 rabbits a day are predated by foxes. The number of rabbits predated by foxes is **Poisson distributed**, because it can't be less than zero and has discrete values. We call that rate, $\lambda$. If you wanted to predict how long it would take for the _first_ rabbit to be eaten on a given day, we need to reach for the **exponential distribution**. The broad definitiion is - if events are Poisson distributed, and occur randomly over time at a rate of $\lambda$, then the time until the first event occuring is described by an exponential distribution. It only has one parameter, $\lambda$, and its probability density function is described as:
@@ -275,3 +314,6 @@ $$
 
 **Remember that an exponential distribution is simply a gamma distribution where the shape, $\alpha=1$**
 
+## Exercises
+
+* Link here to colab for simulating distributions and testing your understanding of the Central Limit Theorem
