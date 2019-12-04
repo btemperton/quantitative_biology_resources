@@ -23,6 +23,12 @@ $$
 -\infty \lt a,b \lt \infty
 $$
 
+Imagine you are running an experiment to determine if [snails possess a 'homing instinct'](https://www.bbc.co.uk/news/science-environment-10856523). You place a snail on a fixed position (the origin) and track its movement in cartesian space over a defined period of time. At the end of the time, you draw a line from the origin to their final destination, and calculate the angle between the line and the x-axis. 
+
+For the null hypothesis, where the direction of travel is purely random, the distribution of those angles will be uniform. Each angle is a continuous value between 0 and 360, and is equally likely to be measured. Therefore the distribution of these angles under a null hypothesis will be uniform. 
+
+
+
 ```{r, echo=FALSE}
 df = tibble(x=c(runif(10000, min=-4, max=4), 
                 runif(10000, min=100, max=1000), 
@@ -46,7 +52,7 @@ ggplot(df, aes(x=x, fill=y)) +
     
 ```
 
-Note there is some bumpiness in the tops of these distributions - this is because the figures are generated using 10,000 random numbers picked from a uniform distribution using the `rpois` function. The more random numbers you pick, the less bumpy the tops become (because you have more observations):
+Note there is some bumpiness in the tops of these distributions - this is because the figures are generated using 10,000 random numbers picked from a uniform distribution using the `runif` function. The more random numbers you pick, the less bumpy the tops become (because you have more observations):
 
 ```{r, echo=FALSE}
 df = tibble(x=c(runif(10, min=-4, max=4),
@@ -72,7 +78,7 @@ ggplot(df, aes(x=x, fill=y)) +
     
 ```
 
-You'll also notice that the slopes of the distribution get straighter the more observations you make. This provides a warning on how one should interpret density plots with few observations - none of the observations are less than $a$ or greater than $b$, but the density plot is smoothing out the curve from the baseline, making it look like there is a low probability of finding values beyond these extremes. If we plot them with a histogram, these go away:
+You'll also notice that the slopes of the distribution get straighter the more observations you make. This provides a warning on how one should interpret density plots with few observations - none of the observations are less than $a$ or greater than $b$, but the density plot is smoothing out the curve from the baseline, making it look like there is low, but non-zero probability of finding values beyond these extremes. If we plot them with a histogram, these go away:
 
 ```{r, echo=FALSE}
 df = tibble(x=c(runif(10, min=-4, max=4),
@@ -316,4 +322,6 @@ $$
 
 ## Exercises
 
-* Link here to colab for simulating distributions and testing your understanding of the Central Limit Theorem
+* <a href="https://colab.research.google.com/github/btemperton/quantitative_biology_resources/blob/master/distributions/exercisesCentral_Limit_Theorem_and_Continuous_Distributions.ipynb" target="_blank">Simulating distributions and testing your understanding of the Central Limit Theorem</a>
+
+
